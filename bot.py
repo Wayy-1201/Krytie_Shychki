@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BOT_TOKEN = os.environ.get("TOKEN")
-WEBAPP_URL = os.environ.get("WEB_URL") # Например: https://tvoi-domen.com
 
 # Инициализируем бота
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -16,10 +15,8 @@ bot = telebot.TeleBot(BOT_TOKEN)
 def send_welcome(message):
     # Вариант 1: Кнопка прямо под сообщением (Inline)
     markup = InlineKeyboardMarkup()
-    web_app_btn = InlineKeyboardButton(
-        text="🚀 Открыть трекер", 
-        web_app=WebAppInfo(url=WEBAPP_URL)
-    )
+    web_app_btn = InlineKeyboardButton(text="🚀 Открыть трекер")
+
     markup.add(web_app_btn)
 
     # Вариант 2 (закомментирован): Кнопка вместо клавиатуры внизу экрана
@@ -35,6 +32,5 @@ def send_welcome(message):
 
 # В самом конце bot.py:
 if __name__ == '__main__':
-    print("Бот на telebot запущен...")
-    bot.remove_webhook()
-    bot.infinity_polling(skip_pending=True)
+    print("БОТ ЗАПУЩЕН")
+    bot.infinity_polling(timeout=30 , long_polling_timeout=20) #ТАЙМЫ И INFINITY
