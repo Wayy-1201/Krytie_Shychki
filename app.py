@@ -1,33 +1,32 @@
 import os
-from datetime import datetime, timezone
+
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.ext.mutable import MutableDict
-from dotenv import load_dotenv
+
 from database import db, User
 
-# Загружаем переменные окружения из .env
+
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)  # Разрешаем запросы (CORS)
+CORS(app)
 
-# Настройка базы данных (Если DATABASE_URL нет, создаст локальный файл app.db)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_URL')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+database_url = os.getenv("DB_URL")
 
+if not database_url:
+    raise RuntimeError("DB_URL is not set")
+
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
 
-db = SQLAlchemy(app)
-
-
-# Создаем таблицы при старте
 with app.app_context():
     db.create_all()
-
 # --- РОУТЫ (ENDPOINTS) ---
+
+
 
 # Главная страница (Отдает ваш index.html из папки templates)
 @app.route('/')
@@ -92,7 +91,6 @@ def sync_data():
     return jsonify({"error": "User not found"}), 404
 
 # --- ЗАПУСК СЕРВЕРА ---
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    print(f"Flask запущен на порту {port}...")
-    app.run(host="0.0.0.0", port=port)
+if __name__ == '__main__': #стандратная проверка
+    port = int(os.environ.get("PORT" , 10000)) #автомат
+    app.run(host="0.0.0.0" , port=port)

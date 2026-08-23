@@ -16,9 +16,6 @@ def start_message(message):
 
 
 
-if __name__ == '__main__':
-    print("Бот запущен...")
-    bot.remove_webhook()
-    bot.infinity_polling(skip_pending=True)
-
-
+if __name__ == "__main__":
+    print("БОТ ЗАПУЩЕН")
+    bot.infinity_polling(timeout=30 , long_polling_timeout=20) #ТАЙМЫ И INFINITY
