@@ -99,5 +99,6 @@ def sync_user():
     return jsonify({"status": "success"})
 
 
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+if __name__ == '__main__': #стандратная проверка
+    port = int(os.environ.get("PORT" , 10000)) #автомат
+    app.run(host="0.0.0.0" , port=port)
