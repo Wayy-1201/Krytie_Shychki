@@ -1,3 +1,4 @@
+#!/bin/bash
 set -e
 
 echo "Запускаем Flask (app.py)..."
@@ -8,5 +9,5 @@ python bot.py &
 
 wait -n
 
-echo "Один из процессов завершился. Render перезапустит сервис."
+echo "Один из процессов завершился."
 exit 1

@@ -33,7 +33,8 @@ def send_welcome(message):
         reply_markup=markup
     )
 
+# В самом конце bot.py:
 if __name__ == '__main__':
     print("Бот на telebot запущен...")
-    # infinity_polling защищает бота от падений при кратковременных ошибках сети
-    bot.infinity_polling()
+    bot.remove_webhook()
+    bot.infinity_polling(skip_pending=True)

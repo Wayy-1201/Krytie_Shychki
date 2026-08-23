@@ -99,6 +99,8 @@ def sync_user():
     return jsonify({"status": "success"})
 
 
-if __name__ == '__main__': #стандратная проверка
-    port = int(os.environ.get("PORT" , 10000)) #автомат
-    app.run(host="0.0.0.0" , port=port)
+# В самом конце app.py:
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
+    print(f"Запускаем Flask на порту {port}...")
+    app.run(host="0.0.0.0", port=port)
