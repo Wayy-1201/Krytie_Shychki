@@ -1,106 +1,94 @@
 import os
-from flask import Flask, request, jsonify , render_template
+from datetime import datetime, timezone
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from database import db, User
-from datetime import datetime, timedelta, timezone
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.mutable import MutableDict
 from dotenv import load_dotenv
 
+# Загружаем переменные окружения из .env
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # Разрешаем запросы (CORS)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_URL')
+# Настройка базы данных (Если DATABASE_URL нет, создаст локальный файл app.db)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///app.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db.init_app(app)
+db = SQLAlchemy(app)
 
+
+# Создаем таблицы при старте
 with app.app_context():
     db.create_all()
 
-# Дефолтное состояние пользователя
-DEFAULT_STATE = {
-    "waterMl": 0,
-    "tiktokMins": 0,
-    "shopDegradation": 0,
-    "obsidianCheckboxState": [False, False, False, False],
-    "gymCheckboxState": [False, False],
-    "notepadDoneTasks": 0,
-    "notepadTotalTasks": 0,
-    "gymMacrosState": {"pro": 0, "carbs": 0, "cal": 0, "penalty": False, "bonus": False, "calBonus": False}
-}
+# --- РОУТЫ (ENDPOINTS) ---
 
-def get_logical_date():
-    msk_tz = timezone(timedelta(hours=3))
-    now_msk = datetime.now(msk_tz)
-    logical_time = now_msk - timedelta(hours=4)
-    return logical_time.date()
-
-
-@app.route('/') #апи запрос который откроет главную страницу на главном экране
+# Главная страница (Отдает ваш index.html из папки templates)
+@app.route('/')
 def index():
-    return render_template('index.html') #возвращем нащ html файл
+    return render_template('index.html')
 
-@app.route('/api/user/<int:tg_id>', methods=['GET'])
-def get_user(tg_id):
-    user = db.session.get(User, tg_id)
-    today = get_logical_date()
-
-    if not user:
-        user = User(tg_id=tg_id, state=DEFAULT_STATE.copy(), last_active_date=today)
-        db.session.add(user)
-        db.session.commit()
-    else:
-        if user.last_active_date < today:
-            # Гарантируем корректный сброс, даже если state был None или пуст
-            current_state = (user.state or {}).copy()
-            current_state.update(DEFAULT_STATE)
-            
-            user.state = current_state
-            user.last_active_date = today
-            db.session.commit()
-
-    return jsonify(user.to_dict())
-
-@app.route('/api/user/sync', methods=['POST'])
-def sync_user():
-    data = request.get_json(silent=True) or {}
+# Создание или обновление пользователя при входе
+@app.route('/save_user', methods=['POST'])
+def save_user():
+    data = request.json
     tg_id = data.get('tg_id')
-    
+    username = data.get('username')
+
     if not tg_id:
         return jsonify({"error": "No tg_id provided"}), 400
 
-    today = get_logical_date()
-    user = db.session.get(User, tg_id)
-    
+    user = User.query.filter_by(tg_id=tg_id).first()
     if not user:
-        user = User(
-            tg_id=tg_id,
-            state=data.get('state', DEFAULT_STATE.copy()),
-            coins=data.get('coins', 0),
-            xp=data.get('xp', 0),
-            level=data.get('level', 1),
-            last_active_date=today
-        )
+        user = User(tg_id=tg_id, username=username)
         db.session.add(user)
+        db.session.commit()
+        return jsonify({"message": "User created"}), 201
     else:
-        if 'coins' in data:
-            user.coins = data['coins']
-        if 'xp' in data:
-            user.xp = data['xp']
-        if 'level' in data:
-            user.level = data['level']
-        if 'state' in data:
-            user.state = data['state']
+        if username and user.username != username:
+            user.username = username
+            db.session.commit()
+        return jsonify({"message": "User exists, updated"}), 200
+
+# Загрузка данных при старте приложения
+@app.route('/get_data/<int:tg_id>', methods=['GET'])
+def get_data(tg_id):
+    user = User.query.filter_by(tg_id=tg_id).first()
+    if user:
+        return jsonify({
+            "tg_id": user.tg_id,
+            "username": user.username,
+            "coins": user.coins,
+            "xp": user.xp,
+            "level": user.level,
+            "state": user.state or {}
+        }), 200
+    return jsonify({"error": "User not found"}), 404
+
+# Сохранение всех данных (синхронизация)
+@app.route('/sync', methods=['POST'])
+def sync_data():
+    data = request.json
+    tg_id = data.get('tg_id')
+
+    if not tg_id:
+        return jsonify({"error": "No tg_id"}), 400
+
+    user = User.query.filter_by(tg_id=tg_id).first()
+    if user:
+        user.coins = data.get('coins', user.coins)
+        user.xp = data.get('xp', user.xp)
+        user.level = data.get('level', user.level)
+        user.state = data.get('state', user.state)
+        db.session.commit()
+        return jsonify({"message": "Data synced successfully"}), 200
         
-        user.last_active_date = today
+    return jsonify({"error": "User not found"}), 404
 
-    db.session.commit()
-    return jsonify({"status": "success"})
-
-
-# В самом конце app.py:
+# --- ЗАПУСК СЕРВЕРА ---
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    print(f"Запускаем Flask на порту {port}...")
+    print(f"Flask запущен на порту {port}...")
     app.run(host="0.0.0.0", port=port)

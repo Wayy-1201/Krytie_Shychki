@@ -1,12 +1,19 @@
-// --- ИНИЦИАЛИЗАЦИЯ TELEGRAM WEB APP ---
-const tg = window.Telegram.WebApp;
-tg.expand();
-const tgId = tg.initDataUnsafe?.user?.id || 123456789;
+// ==========================================
+// 1. ИНИЦИАЛИЗАЦИЯ TELEGRAM WEB APP
+// ==========================================
+const tg = window.Telegram?.WebApp || { 
+    expand: () => {}, 
+    // Заглушка, чтобы при открытии в браузере с ПК сайт не ломался
+    initDataUnsafe: { user: { id: 123456789, username: "DevMode", first_name: "Разработчик" } } 
+};
+if (tg.expand) tg.expand();
 
-// --- URL БЭКЕНДА ---
-const API_URL = "http://127.0.0.1:5000/api/user";
+const user = tg.initDataUnsafe?.user;
+const tgId = user ? user.id : 123456789;
 
-// --- ГЛОБАЛЬНЫЕ ДАННЫЕ И СОСТОЯНИЕ (Объявлены строго вверху) ---
+// ==========================================
+// 2. ГЛОБАЛЬНЫЕ ДАННЫЕ И СОСТОЯНИЕ
+// ==========================================
 let userCoins = 0;
 let userXP = 0;
 let userLevel = 1;
@@ -35,7 +42,47 @@ let lastGymXP = 0;
 
 let toastTimeout;
 
-// --- СИНХРОНИЗАЦИЯ С СЕРВЕРОМ ---
+// ==========================================
+// 3. БЭКЕНД И СИНХРОНИЗАЦИЯ С СЕРВЕРОМ
+// ==========================================
+
+// Установка аватарок и имени из Telegram
+function setupAvatars() {
+    if (!user) return;
+    
+    const userNameEl = document.getElementById('user-name');
+    if (userNameEl) {
+        userNameEl.textContent = user.first_name || user.username || 'Гость';
+    }
+
+    const userAvatarEl = document.getElementById('user-avatar');
+    if (userAvatarEl && user.photo_url) {
+        userAvatarEl.src = user.photo_url;
+    }
+
+    const navAvatarEl = document.getElementById('nav-avatar');
+    if (navAvatarEl && user.photo_url) {
+        navAvatarEl.src = user.photo_url;
+    }
+}
+
+// Регистрация или обновление пользователя в БД
+async function registerUser() {
+    try {
+        await fetch('/save_user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                tg_id: tgId,
+                username: user?.username || user?.first_name || 'Гость'
+            })
+        });
+    } catch (err) {
+        console.error("Ошибка при регистрации:", err);
+    }
+}
+
+// Отправка текущих данных в БД
 async function syncDataWithServer() {
     const payload = {
         tg_id: tgId,
@@ -51,7 +98,8 @@ async function syncDataWithServer() {
     };
 
     try {
-        await fetch(`${API_URL}/sync`, {
+        // Относительный путь, больше никаких http://127.0.0.1
+        await fetch('/sync', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -61,7 +109,47 @@ async function syncDataWithServer() {
     }
 }
 
-// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
+// Загрузка данных из БД
+async function loadUserData() {
+    try {
+        const response = await fetch(`/get_data/${tgId}`);
+        if (!response.ok) {
+            console.log("Данные пользователя еще не созданы или ошибка загрузки.");
+            return;
+        }
+        
+        const data = await response.json();
+        
+        userCoins = data.coins || 0;
+        userXP = data.xp || 0;
+        userLevel = data.level || 1;
+        
+        const s = data.state || {};
+        waterMl = s.waterMl || 0;
+        tiktokMins = s.tiktokMins || 0;
+        physicalBattery = s.physicalBattery !== undefined ? s.physicalBattery : 100;
+        socialBattery = s.socialBattery !== undefined ? s.socialBattery : 100;
+        shopDegradation = s.shopDegradation || 0;
+        
+        notepadTotalTasks = s.notepadTotalTasks || 0;
+        notepadDoneTasks = s.notepadDoneTasks || 0;
+        
+        obsidianCheckboxState = s.obsidianCheckboxState || [false, false, false, false];
+        gymCheckboxState = s.gymCheckboxState || [false, false];
+        gymMacrosState = s.gymMacrosState || { pro: 0, carbs: 0, cal: 0, penalty: false, bonus: false, calBonus: false };
+
+        // Перерисовываем UI без повторного отправления запроса на сервер
+        updateProfileUI(false);
+        syncUIStates();
+
+    } catch (err) {
+        console.error("Ошибка загрузки профиля:", err);
+    }
+}
+
+// ==========================================
+// 4. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ И UI
+// ==========================================
 function getMaxXP(lvl) {
     let xp = 200;
     for (let i = 1; i < lvl; i++) {
@@ -296,40 +384,19 @@ function syncUIStates() {
     if (socFill) socFill.style.height = `${socialBattery}%`;
 }
 
-async function loadUserData() {
-    try {
-        const response = await fetch(`${API_URL}/${tgId}`);
-        const data = await response.json();
-        
-        userCoins = data.coins || 0;
-        userXP = data.xp || 0;
-        userLevel = data.level || 1;
-        
-        const s = data.state || {};
-        waterMl = s.waterMl || 0;
-        tiktokMins = s.tiktokMins || 0;
-        physicalBattery = s.physicalBattery !== undefined ? s.physicalBattery : 100;
-        socialBattery = s.socialBattery !== undefined ? s.socialBattery : 100;
-        shopDegradation = s.shopDegradation || 0;
-        
-        notepadTotalTasks = s.notepadTotalTasks || 0;
-        notepadDoneTasks = s.notepadDoneTasks || 0;
-        
-        obsidianCheckboxState = s.obsidianCheckboxState || [false, false, false, false];
-        gymCheckboxState = s.gymCheckboxState || [false, false];
-        gymMacrosState = s.gymMacrosState || { pro: 0, carbs: 0, cal: 0, penalty: false, bonus: false, calBonus: false };
 
-        // Перерисовываем UI без повторного отправления запроса на сервер
-        updateProfileUI(false);
-        syncUIStates();
+// ==========================================
+// 5. ИНИЦИАЛИЗАЦИЯ СОБЫТИЙ (DOM LOADED)
+// ==========================================
+document.addEventListener('DOMContentLoaded', async () => {
+    
+    // Сначала устанавливаем аватарки
+    setupAvatars();
+    // Затем регистрируем пользователя в базе
+    await registerUser();
+    // Затем скачиваем его данные и перерисовываем интерфейс
+    await loadUserData();
 
-    } catch (err) {
-        console.error("Ошибка загрузки профиля:", err);
-    }
-}
-
-// --- ИНИЦИАЛИЗАЦИЯ СОБЫТИЙ ПОСЛЕ ЗАГРУЗКИ DOM ---
-document.addEventListener('DOMContentLoaded', () => {
     const badge = document.getElementById('nav-badge-val');
 
     // Навигация
@@ -632,6 +699,4 @@ document.addEventListener('DOMContentLoaded', () => {
     setupBattery('bar-physical', 'fill-physical');
     setupBattery('bar-social', 'fill-social');
 
-    // Загрузка данных при входе
-    loadUserData();
 });

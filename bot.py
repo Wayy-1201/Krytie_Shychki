@@ -1,36 +1,24 @@
-import os
 import telebot
-from telebot.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
+import os
 from dotenv import load_dotenv
 
-# Загружаем переменные окружения
 load_dotenv()
-
-BOT_TOKEN = os.environ.get("TOKEN")
-
-# Инициализируем бота
+BOT_TOKEN = os.getenv('TOKEN') # Проверьте, что в .env есть токен!
 bot = telebot.TeleBot(BOT_TOKEN)
 
+
 @bot.message_handler(commands=['start'])
-def send_welcome(message):
-    # Вариант 1: Кнопка прямо под сообщением (Inline)
-    markup = InlineKeyboardMarkup()
-    web_app_btn = InlineKeyboardButton(text="🚀 Открыть трекер")
+def start_message(message):
+    user = message.from_user.id #получаем id  чела
+    username = message.from_user.username or "Аноним" # и имя
+    bot.send_message(message.chat.id , text=f"📌 Приветствую, {username}")
 
-    markup.add(web_app_btn)
 
-    # Вариант 2 (закомментирован): Кнопка вместо клавиатуры внизу экрана
-    # markup = ReplyKeyboardMarkup(resize_keyboard=True)
-    # web_app_btn = KeyboardButton(text="🚀 Открыть трекер", web_app=WebAppInfo(url=WEBAPP_URL))
-    # markup.add(web_app_btn)
 
-    bot.send_message(
-        message.chat.id, 
-        "Привет! Нажми на кнопку ниже, чтобы открыть своё приложение:", 
-        reply_markup=markup
-    )
-
-# В самом конце bot.py:
 if __name__ == '__main__':
-    print("БОТ ЗАПУЩЕН")
-    bot.infinity_polling(timeout=30 , long_polling_timeout=20) #ТАЙМЫ И INFINITY
+    print("Бот запущен...")
+    bot.remove_webhook()
+    bot.infinity_polling(skip_pending=True)
+
+

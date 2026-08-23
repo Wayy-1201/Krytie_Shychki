@@ -7,6 +7,8 @@
     <link rel="icon" type="image/png" href="../static/imgs/for_profile/platform_15059942 1.png">
     <link rel="stylesheet" href="/static/style.css">
     
+    <!-- Скрипт Telegram -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
@@ -42,7 +44,6 @@
                     <button class="btn-edit" id="btn-edit-notepad">Редактировать</button>
                 </div>
 
-                <!-- НОВАЯ КАРТОЧКА: ЗАЛ -->
                 <div class="task-card">
                     <div class="status-dot" id="gym-status"></div>
                     <img src="../static/imgs/for_zadachi/zak.png" class="task-top-icon" alt="gym">
@@ -55,7 +56,6 @@
                     </div>
                     <button class="btn-edit" id="btn-edit-gym">Редактировать</button>
                 </div>
-
             </div>
 
             <div id="page-tree" class="page">
@@ -118,9 +118,9 @@
                 <div class="user-card">
                     <div class="user-info">
                         <div class="user-profile-header">
-                            <img src="https://placehold.co/60/333/fff?text=Avatar" class="avatar-lg" alt="User">
+                            <img src="https://placehold.co/60/333/fff?text=Avatar" class="avatar-lg" id="user-avatar" alt="User">
                             <div>
-                                <div class="user-name">One_WayyyY</div>
+                                <div class="user-name" id="user-name">Загрузка...</div>
                                 <div class="user-lvl">LVL <span id="profile-lvl">1</span></div>
                             </div>
                         </div>
@@ -192,7 +192,7 @@
             </div>
 
             <a href="#" class="nav-profile" data-target="page-profile">
-                <img src="https://placehold.co/60/333/fff?text=Me" alt="Profile">
+                <img src="https://placehold.co/60/333/fff?text=Me" id="nav-avatar" alt="Profile">
                 <div class="nav-badge" id="nav-badge-val"></div> 
             </a>
         </nav>
@@ -237,7 +237,6 @@
             </div>
         </div>
 
-        <!-- НОВОЕ МОДАЛЬНОЕ ОКНО: ЗАЛ -->
         <div class="modal-overlay" id="gym-modal">
             <div class="modal-box">
                 <label class="check-item">
@@ -272,8 +271,7 @@
         </div>
 
     </div>
-</body>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="/static/main.js"></script>
-</html>
 
+    <script src="/static/main.js"></script>
+</body>
+</html>
