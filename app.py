@@ -14,8 +14,11 @@ app = Flask(__name__)
 CORS(app)  # Разрешаем запросы (CORS)
 
 # Настройка базы данных (Если DATABASE_URL нет, создаст локальный файл app.db)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///app.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+
+db.init_app(app)
 
 db = SQLAlchemy(app)
 
