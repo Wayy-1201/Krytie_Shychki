@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mynd9x's App</title>
+    <link rel="icon" type="image/png" href="../static/imgs/for_profile/platform_15059942 1.png">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+    <div id="toast" class="toast-notification">Успешно!</div>
+
+    <div class="app-container">
+        
+        <div class="content-wrapper">
+            <div id="page-tasks" class="page active">
+                <div class="task-card">
+                    <div class="status-dot" id="obsidian-status"></div>
+                    <img src="../static/imgs/for_zadachi/Group 137.png" class="task-top-icon" alt="obsidian">
+                    <div class="task-img-wrapper">
+                        <img src="../static/imgs/for_zadachi/Vector.png" alt="code-purple">
+                    </div>
+                    <div class="task-text-content">
+                        <div class="task-title">Выполнено:</div>
+                        <div class="task-count"><span id="obsidian-count">0</span> пунктов</div>
+                    </div>
+                    <button class="btn-edit" id="btn-edit-obsidian">Редактировать</button>
+                </div>
+                
+                <div class="task-card">
+                    <div class="status-dot" id="notepad-status"></div>
+                    <img src="../static/imgs/for_zadachi/i 7.png" class="task-top-icon" alt="notepad">
+                    <div class="task-img-wrapper">
+                        <img src="../static/imgs/for_zadachi/Vector 262.png" alt="code-yellow">
+                    </div>
+                    <div class="task-text-content">
+                        <div class="task-title">Выполнено:</div>
+                        <div class="task-count"><span id="notepad-count">0</span> задач</div>
+                    </div>
+                    <button class="btn-edit" id="btn-edit-notepad">Редактировать</button>
+                </div>
+
+                <!-- НОВАЯ КАРТОЧКА: ЗАЛ -->
+                <div class="task-card">
+                    <div class="status-dot" id="gym-status"></div>
+                    <img src="../static/imgs/for_zadachi/zak.png" class="task-top-icon" alt="gym">
+                    <div class="task-img-wrapper">
+                        <img src="../static/imgs/for_zadachi/Vector_zal.png" alt="gym-vector">
+                    </div>
+                    <div class="task-text-content">
+                        <div class="task-title">Выполнено:</div>
+                        <div class="task-count"><span id="gym-count">0</span> / 2</div>
+                    </div>
+                    <button class="btn-edit" id="btn-edit-gym">Редактировать</button>
+                </div>
+
+            </div>
+
+            <div id="page-tree" class="page">
+                <div style="height: 100%; min-height: 60vh; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 20px; font-weight: 700;">
+                    Скоро что-то придумаю
+                </div>
+            </div>
+
+            <div id="page-shop" class="page">
+                <div class="shop-grid">
+                    <div class="shop-card">
+                        <img src="../static/imgs/for_magazine/light.png" class="shop-img" alt="anime">
+                        <div class="shop-title">Посмотреть 4 часа ANIME</div>
+                        <button class="btn-buy">Купить за 750</button>
+                    </div>
+                    <div class="shop-card">
+                        <img src="../static/imgs/for_magazine/mrrobot.png" class="shop-img" alt="movie">
+                        <div class="shop-title">Посмотреть любой фильм</div>
+                        <button class="btn-buy">Купить за 450</button>
+                    </div>
+                    <div class="shop-card">
+                        <img src="../static/imgs/for_magazine/grififit.png" class="shop-img" alt="chill">
+                        <div class="shop-title">Ничего не делать 1 день</div>
+                        <button class="btn-buy">Купить за 1000</button>
+                    </div>
+                    <div class="shop-card">
+                        <img src="../static/imgs/for_magazine/cici.png" class="shop-img" alt="snack">
+                        <div class="shop-title">Купить вкусняшку на раз</div>
+                        <button class="btn-buy">Купить за 100</button>
+                    </div>
+                    <div class="shop-card">
+                        <img src="../static/imgs/for_magazine/cs2.png" class="shop-img" alt="cs2">
+                        <div class="shop-title">Поиграть в комп всю ночь</div>
+                        <button class="btn-buy">Купить за 500</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-profile" class="page">
+                <div class="stats-row">
+                    <div class="stat-card" id="tiktok-card" style="background: linear-gradient(135deg, #1c0a29 0%, #371877 100%);">
+                        <img src="../static/imgs/for_profile/platform_15059942 1.png" alt="tiktok">
+                        <div class="stat-title">Время в TikTok</div>
+                        <div class="progress-track">
+                            <div class="progress-fill" id="tiktok-fill" style="width: 0%; background-color: var(--accent-purple); box-shadow: 0 0 8px rgba(191,90,242,0.5);"></div>
+                        </div>
+                        <div class="stat-subtext" id="tiktok-text">0 / 45 м.</div>
+                    </div>
+                    
+                    <div class="stat-card" id="water-card" style="background: linear-gradient(135deg, #06182c 0%, #14468b 100%);">
+                        <img src="../static/imgs/for_profile/free-icon-water-7126651 1.png" alt="water">
+                        <div class="stat-title">Количество воды</div>
+                        <div class="progress-track">
+                            <div class="progress-fill" id="water-fill" style="width: 0%; background-color: var(--accent-blue); box-shadow: 0 0 8px rgba(10,132,255,0.5);"></div>
+                        </div>
+                        <div class="stat-subtext" id="water-text">0 / 2500 мл.</div>
+                    </div>
+                </div>
+
+                <div class="user-card">
+                    <div class="user-info">
+                        <div class="user-profile-header">
+                            <img src="https://placehold.co/60/333/fff?text=Avatar" class="avatar-lg" alt="User">
+                            <div>
+                                <div class="user-name">One_WayyyY</div>
+                                <div class="user-lvl">LVL <span id="profile-lvl">1</span></div>
+                            </div>
+                        </div>
+                        <div class="points-box">
+                            <div class="points-label">Очков для трат:</div>
+                            <div class="points-val" id="profile-coins">0</div>
+                        </div>
+                    </div>
+                    <div class="progress-track" style="height: 10px; background-color: #1a1a1a;">
+                        <div class="progress-fill" id="profile-xp-bar" style="width: 0%; background-color: var(--accent-green); box-shadow: 0 0 10px rgba(50, 215, 75, 0.6);"></div>
+                    </div>
+                    <div class="stat-subtext" id="profile-xp-text">0 / 200</div>
+                </div>
+
+                <div class="chart-section">
+                    <div class="pie-chart-container">
+                        <span class="side-bar-label" style="left:0;">Physical</span>
+                        <div class="side-bar" id="bar-physical">
+                            <div class="side-bar-fill" id="fill-physical" style="height: 100%; background-color: var(--accent-green);"></div>
+                        </div>
+                        
+                        <div class="pie-chart">
+                            <div class="pie-center"></div>
+                        </div>
+                        
+                        <span class="side-bar-label-2" style="right:0;">Social</span>
+                        <div class="side-bar" id="bar-social">
+                            <div class="side-bar-fill" id="fill-social" style="height: 100%; background-color: var(--accent-green);"></div>
+                        </div>
+                    </div>
+
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background-color: var(--accent-red);"></div> Деградация
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background-color: var(--accent-green);"></div> Полезное
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background-color: var(--accent-blue);"></div> Усталость
+                        </div>
+                    </div>
+
+                    <div class="morality-bar-container">
+                        <span>Успех</span>
+                        <span style="color: #000;">Позор</span>
+                    </div>
+                    <div class="morality-bar-track">
+                        <div class="morality-bar-fill" style="width: 65%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="bottom-nav-wrapper">
+            <div class="nav-pill">
+                <a href="#" class="nav-item active" data-target="page-tasks">
+                    <img src="../static/imgs/for_nav/free-icon-achievement-6059907 1.png" alt="Tasks">
+                    Задания
+                </a>
+                <a href="#" class="nav-item" data-target="page-tree">
+                    <img src="../static/imgs/for_nav/free-icon-money-tree-4258383 1.png" alt="Tree">
+                    Дерево
+                </a>
+                <a href="#" class="nav-item" data-target="page-shop">
+                    <img src="../static/imgs/for_nav/free-icon-clothing-store-12351517 1.png" alt="Shop">
+                    Магазин
+                </a>
+            </div>
+
+            <a href="#" class="nav-profile" data-target="page-profile">
+                <img src="https://placehold.co/60/333/fff?text=Me" alt="Profile">
+                <div class="nav-badge" id="nav-badge-val"></div> 
+            </a>
+        </nav>
+
+        <div class="modal-overlay" id="obsidian-modal">
+            <div class="modal-box">
+                <label class="check-item">
+                    <input type="checkbox" class="obsidian-check">
+                    <span class="checkmark"></span>
+                    Прочитал все, обновил
+                </label>
+                <label class="check-item">
+                    <input type="checkbox" class="obsidian-check">
+                    <span class="checkmark"></span>
+                    Зафиксировал новое
+                </label>
+                <label class="check-item">
+                    <input type="checkbox" class="obsidian-check">
+                    <span class="checkmark"></span>
+                    Проанализировал
+                </label>
+                <label class="check-item">
+                    <input type="checkbox" class="obsidian-check">
+                    <span class="checkmark"></span>
+                    Другие мелочи
+                </label>
+                <button class="modal-save-btn" id="save-obsidian-btn">Сохранить</button>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="notepad-modal">
+            <div class="modal-box">
+                <div class="input-group">
+                    <label>Целей на день задано:</label>
+                    <input type="number" id="notepad-total" placeholder="..." min="0">
+                </div>
+                <div class="input-group">
+                    <label>Целей выполнено:</label>
+                    <input type="number" id="notepad-done" placeholder="..." min="0">
+                </div>
+                <button class="modal-save-btn" id="save-notepad-btn">Сохранить</button>
+            </div>
+        </div>
+
+        <!-- НОВОЕ МОДАЛЬНОЕ ОКНО: ЗАЛ -->
+        <div class="modal-overlay" id="gym-modal">
+            <div class="modal-box">
+                <label class="check-item">
+                    <input type="checkbox" class="gym-check">
+                    <span class="checkmark"></span>
+                    Поход в зал
+                </label>
+                <label class="check-item">
+                    <input type="checkbox" class="gym-check">
+                    <span class="checkmark"></span>
+                    Луксмаксинг
+                </label>
+                
+                <div class="input-group" style="margin-bottom: 12px; margin-top: 24px;">
+                    <label>Калории (Норма 2000-2100):</label>
+                    <input type="number" id="gym-cal" placeholder="ккал" min="0">
+                </div>
+                
+                <div class="input-group" style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>Белки (г):</label>
+                        <input type="number" id="gym-pro" placeholder="0" min="0">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Углеводы (г):</label>
+                        <input type="number" id="gym-carbs" placeholder="0" min="0">
+                    </div>
+                </div>
+                
+                <button class="modal-save-btn" id="save-gym-btn">Сохранить</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="/static/main.js"></script>
+</body>
+</html>
+
