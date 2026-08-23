@@ -5,6 +5,7 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.mutable import MutableDict
 from dotenv import load_dotenv
+from database import db, User
 
 # Загружаем переменные окружения из .env
 load_dotenv()
