@@ -387,6 +387,29 @@
         .stat-card:active {
             transform: scale(0.96);
         }
+        /* Более компактные карточки TikTok и воды */
+
+        
+        #tiktok-card,
+        #water-card {
+            padding: 11px 16px;
+        }
+
+        #tiktok-card img,
+        #water-card img {
+            height: 48px;
+            margin-bottom: 6px;
+        }
+
+        #tiktok-card .stat-title,
+        #water-card .stat-title {
+            margin-bottom: 8px;
+        }
+
+        #tiktok-card .stat-subtext,
+        #water-card .stat-subtext {
+            margin-bottom: 8px;
+        }
         .stat-card img {
             height: 55px;
             object-fit: contain;

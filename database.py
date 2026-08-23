@@ -1,10 +1,13 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.mutable import MutableDict
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
+from copy import deepcopy
 
 db = SQLAlchemy()
 
-# Базовое дефолтное состояние для нового пользователя или ежедневного сброса
+MSK = ZoneInfo("Europe/Moscow")
+
 DEFAULT_STATE = {
     "waterMl": 0,
     "tiktokMins": 0,
@@ -16,10 +19,29 @@ DEFAULT_STATE = {
     "obsidianCheckboxState": [False, False, False, False],
     "gymCheckboxState": [False, False],
     "gymMacrosState": {
-        "pro": 0, "carbs": 0, "cal": 0, 
-        "penalty": False, "bonus": False, "calBonus": False
+        "pro": 0,
+        "carbs": 0,
+        "cal": 0,
+        "penalty": False,
+        "bonus": False,
+        "calBonus": False
     }
 }
+
+
+def get_msk_reset_date():
+    """
+    Возвращает текущий "игровой день" по Москве.
+    Новый день начинается в 04:00 МСК.
+    """
+    now_msk = datetime.now(timezone.utc).astimezone(MSK)
+
+    # До 04:00 ещё считается предыдущий игровой день
+    if now_msk.hour < 4:
+        return now_msk.date() - timedelta(days=1)
+
+    return now_msk.date()
+
 
 class User(db.Model):
     __tablename__ = "users"
@@ -33,42 +55,38 @@ class User(db.Model):
 
     state = db.Column(
         MutableDict.as_mutable(db.JSON),
-        default=lambda: DEFAULT_STATE.copy()
+        default=lambda: deepcopy(DEFAULT_STATE)
     )
 
-    last_active_date = db.Column(db.Date, default=date.today)
-    
+    last_active_date = db.Column(
+        db.Date,
+        default=get_msk_reset_date
+    )
 
     def check_and_reset_daily(self):
-        """Автоматический сброс дневных счетчиков при наступлении нового дня"""
-        today = date.today()
-        if self.last_active_date != today:
-            current_state = self.state or {}
-            
-            # Сбрасываем дневные задачи и счетчики
-            current_state.update({
-                "waterMl": 0,
-                "tiktokMins": 0,
-                "obsidianCheckboxState": [False, False, False, False],
-                "gymCheckboxState": [False, False],
-                "gymMacrosState": {
-                    "pro": 0, "carbs": 0, "cal": 0, 
-                    "penalty": False, "bonus": False, "calBonus": False
-                }
-            })
-            
-            self.state = current_state
-            self.last_active_date = today
+        """
+        Сброс всего state один раз в новый игровой день.
+        Новый игровой день начинается в 04:00 МСК.
+        coins/xp/level не меняются.
+        """
+        current_reset_date = get_msk_reset_date()
+
+        if self.last_active_date != current_reset_date:
+            self.state = deepcopy(DEFAULT_STATE)
+            self.last_active_date = current_reset_date
             return True
+
         return False
 
     def to_dict(self):
-        # Проверяем сброс перед отдачей данных клиенту
         self.check_and_reset_daily()
+
         return {
             "tg_id": self.tg_id,
+            "username": self.username,
             "coins": self.coins,
             "xp": self.xp,
             "level": self.level,
-            "state": self.state or DEFAULT_STATE
+            "state": self.state or deepcopy(DEFAULT_STATE)
         }
+

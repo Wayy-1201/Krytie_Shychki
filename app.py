@@ -59,7 +59,11 @@ def save_user():
 @app.route('/get_data/<int:tg_id>', methods=['GET'])
 def get_data(tg_id):
     user = User.query.filter_by(tg_id=tg_id).first()
+
     if user:
+        user.check_and_reset_daily()
+        db.session.commit()
+
         return jsonify({
             "tg_id": user.tg_id,
             "username": user.username,
@@ -68,7 +72,9 @@ def get_data(tg_id):
             "level": user.level,
             "state": user.state or {}
         }), 200
+
     return jsonify({"error": "User not found"}), 404
+    
 
 # Сохранение всех данных (синхронизация)
 @app.route('/sync', methods=['POST'])
