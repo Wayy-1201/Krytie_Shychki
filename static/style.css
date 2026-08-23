@@ -389,27 +389,7 @@
         }
         /* Более компактные карточки TikTok и воды */
 
-        
-        #tiktok-card,
-        #water-card {
-            padding: 11px 16px;
-        }
 
-        #tiktok-card img,
-        #water-card img {
-            height: 48px;
-            margin-bottom: 6px;
-        }
-
-        #tiktok-card .stat-title,
-        #water-card .stat-title {
-            margin-bottom: 8px;
-        }
-
-        #tiktok-card .stat-subtext,
-        #water-card .stat-subtext {
-            margin-bottom: 8px;
-        }
         .stat-card img {
             height: 55px;
             object-fit: contain;
@@ -729,3 +709,41 @@
             z-index: 9999;
 }
 
+
+
+/* Компактные карточки TikTok и воды */
+    #tiktok-card,
+    #water-card {
+        padding: 11px 16px;
+    }
+    
+    #tiktok-card img,
+    #water-card img {
+        height: 48px;
+        margin-bottom: 6px;
+    }
+    
+    /* Ровные подписи Physical / Social */
+    .side-bar-label {
+        position: absolute;
+        top: 320px;
+        left: 0;
+        transform: translateX(13px);
+        margin-left: 0;
+        font-size: 15px;
+        font-weight: 800;
+        color: #ffffff;
+        z-index: 2;
+    }
+    
+    .side-bar-label-2 {
+        position: absolute;
+        top: 320px;
+        right: 0;
+        transform: translateX(-13px);
+        margin-right: 0;
+        font-size: 15px;
+        font-weight: 800;
+        color: #ffffff;
+        z-index: 2;
+    }
