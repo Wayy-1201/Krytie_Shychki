@@ -432,13 +432,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     badge.innerText = userCoins;
                     badge.style.color = "white";  
                     for_tree.style.marginTop = "60px"; 
-                    for_tree.style.padding = "16px"; // ВОЗВРАЩАЕМ PADDING
+                    
                     
                 } else if (link.getAttribute('data-target') === 'page-tasks') {
                     badge.innerText = userLevel;
                     badge.style.color = "#0a84ff";
                     for_tree.style.marginTop = "60px"; 
-                    for_tree.style.padding = "16px"; // ВОЗВРАЩАЕМ PADDING
+                    
                     
                 } else if (link.getAttribute('data-target') === 'page-tree') {
                     if (typeof initTree === 'function') {
@@ -446,7 +446,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         initTree(); 
                         badge.innerHTML = treeStage; 
                         badge.style.color = "#33ff00";
-                        for_tree.style.padding = "0px"; // Убираем паддинг для дерева
                         for_tree.style.marginTop = "45px"; 
                     }
                 }
@@ -823,7 +822,7 @@ function drawGround(w, h) {
     
     // Рисуем большой плавный холм. Контрольная точка изгиба по центру поднята до h - 160
     // Фактическая вершина холма получится ровно на высоте h - 110
-    treeCtx.quadraticCurveTo(w / 2, h - 240, w, h - 60);
+    treeCtx.quadraticCurveTo(w / 2, h - 450, w, h - 60);
     
     // Опускаемся по правому краю и закрываем контур в правом нижнем углу
     treeCtx.lineTo(w, h); 
@@ -892,7 +891,7 @@ function renderTree() {
     let startLength = 40 + (stage * 15); 
     
     treeCtx.save();
-    treeCtx.translate(w / 2, h - 110); 
+    treeCtx.translate(w / 2, h - 240); 
     
     // 2. Добавляем магическую ауру за деревом (свечение)
     let auraGradient = treeCtx.createRadialGradient(0, -startLength * 2, 0, 0, -startLength * 2, startLength * 4);
