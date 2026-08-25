@@ -413,45 +413,52 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const badge = document.getElementById('nav-badge-val');
 
-    // Навигация
+// Навигация
     const allNavLinks = document.querySelectorAll('.nav-item, .nav-profile');
     const pages = document.querySelectorAll('.page');
     const contentWrapper = document.querySelector('.content-wrapper');
-
+    
     allNavLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
             document.querySelector('.nav-profile')?.classList.remove('active');
             link.classList.add('active');
-
+        
             if (badge) {
                 const for_tree = document.querySelector('.content-wrapper');
+                
                 if (link.classList.contains('nav-profile') || link.getAttribute('data-target') === 'page-shop') {
                     badge.innerText = userCoins;
                     badge.style.color = "white";  
-                    for_tree.style.marginTop = "60px"; // Возвращаем верхний маргин для дерева
+                    for_tree.style.marginTop = "60px"; 
+                    for_tree.style.padding = "16px"; // ВОЗВРАЩАЕМ PADDING
+                    
                 } else if (link.getAttribute('data-target') === 'page-tasks') {
                     badge.innerText = userLevel;
                     badge.style.color = "#0a84ff";
-                    for_tree.style.marginTop = "60px"; // Возвращаем верхний маргин для дерева
-                }
-                if (link.getAttribute('data-target') === 'page-tree') {
+                    for_tree.style.marginTop = "60px"; 
+                    for_tree.style.padding = "16px"; // ВОЗВРАЩАЕМ PADDING
+                    
+                } else if (link.getAttribute('data-target') === 'page-tree') {
                     if (typeof initTree === 'function') {
-                        let treeStage = getTreeStage(userLevel); // Получаем текущую стадию дерева
-                        initTree(); // Безопасно запускаем перерисовку и инициализацию холста
-                        badge.innerHTML = treeStage; // Показываем уровень на дереве
+                        let treeStage = getTreeStage(userLevel); 
+                        initTree(); 
+                        badge.innerHTML = treeStage; 
                         badge.style.color = "#33ff00";
                         for_tree.style.padding = "0px"; // Убираем паддинг для дерева
-                        for_tree.style.marginTop = "45px"; // Убираем верхний маргин для дерева
+                        for_tree.style.marginTop = "45px"; 
                     }
                 }
             }
-
+        
             pages.forEach(page => page.classList.remove('active'));
             const targetId = link.getAttribute('data-target');
             document.getElementById(targetId)?.classList.add('active');
-            if (contentWrapper) contentWrapper.scrollTo(0, 0);
+            
+            // Скроллинг наверх
+            const appContainer = document.querySelector('.app-container');
+            if (appContainer) appContainer.scrollTo(0, 0); 
         });
     });
 
