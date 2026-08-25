@@ -614,7 +614,7 @@
         /* --- НАВИГАЦИЯ --- */
         .bottom-nav-wrapper {
             position: fixed;
-            top: 87%;
+            top: 90%;
             width: 100%;
             max-width: 420px;
             display: flex;
