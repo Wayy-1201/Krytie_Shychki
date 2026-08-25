@@ -412,12 +412,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             link.classList.add('active');
 
             if (badge) {
+                const for_tree = document.querySelector('.content-wrapper');
                 if (link.classList.contains('nav-profile') || link.getAttribute('data-target') === 'page-shop') {
                     badge.innerText = userCoins;
                     badge.style.color = "white";  
+                    for_tree.style.marginTop = "60px"; // Возвращаем верхний маргин для дерева
                 } else if (link.getAttribute('data-target') === 'page-tasks') {
                     badge.innerText = userLevel;
                     badge.style.color = "#0a84ff";
+                    for_tree.style.marginTop = "60px"; // Возвращаем верхний маргин для дерева
+                }
+                if (link.getAttribute('data-target') === 'page-tree') {
+                    if (typeof initTree === 'function') {
+                        let treeStage = getTreeStage(userLevel); // Получаем текущую стадию дерева
+                        initTree(); // Безопасно запускаем перерисовку и инициализацию холста
+                        badge.innerHTML = treeStage; // Показываем уровень на дереве
+                        badge.style.color = "#33ff00";
+                        for_tree.style.padding = "0px"; // Убираем паддинг для дерева
+                        for_tree.style.marginTop = "45px"; // Убираем верхний маргин для дерева
+                    }
                 }
             }
 
@@ -698,5 +711,344 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     setupBattery('bar-physical', 'fill-physical');
     setupBattery('bar-social', 'fill-social');
+    initTree();
 
 });
+
+
+
+
+
+
+// ==========================================
+// 6. ИНТЕРАКТИВНОЕ ДЕРЕВО (CANVAS)
+// ==========================================
+let treeTime = 0;
+let treeCanvas = null;
+let treeCtx = null;
+let particles = [];
+const MAX_PARTICLES = 60; // Количество летающих частиц
+
+// Определение стадии строго по уровням
+function getTreeStage(lvl) {
+    if (lvl >= 1 && lvl <= 3) return 1;
+    if (lvl >= 4 && lvl <= 6) return 2;
+    if (lvl >= 7 && lvl <= 9) return 3;
+    if (lvl >= 10 && lvl <= 14) return 4;
+    if (lvl >= 15) return 5; // 19 и выше
+}
+
+// Создание одной частицы
+function createParticle(w, h) {
+    return {
+        x: Math.random() * w,
+        y: Math.random() * h,
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: (Math.random() - 0.5) * 0.5 - 0.5, // Летят слегка вверх
+        size: Math.random() * 2 + 1.5,
+        life: Math.random(),
+        alpha: Math.random() * 0.5 + 0.3
+    };
+}
+
+function initTree() {
+    treeCanvas = document.getElementById('treeCanvas');
+    const treeContainer = document.querySelector('.tree-container');
+
+    if (!treeCanvas || !treeContainer) return;
+
+    treeCtx = treeCanvas.getContext('2d');
+
+    // Безопасное назначение размеров
+    if (treeContainer.clientWidth > 0) {
+        treeCanvas.width = treeContainer.clientWidth;
+        treeCanvas.height = treeContainer.clientHeight;
+    }
+
+    const resizeObserver = new ResizeObserver(entries => {
+        for (let entry of entries) {
+            const { width, height } = entry.contentRect;
+            if (width > 0 && height > 0) {
+                treeCanvas.width = width;
+                treeCanvas.height = height;
+            }
+        }
+    });
+    
+    resizeObserver.observe(treeContainer);
+    
+    // Запускаем цикл отрисовки один раз
+    if (!window.treeAnimationStarted) {
+        window.treeAnimationStarted = true;
+        requestAnimationFrame(renderTree);
+    }
+}
+
+function drawGround(w, h) {
+    treeCtx.save();
+    
+    // Градиент от вершины холма до самого низа
+    let groundGrad = treeCtx.createLinearGradient(0, h - 150, 0, h);
+    groundGrad.addColorStop(0, '#3e5c22'); // Темно-зеленая трава на верхушке
+    groundGrad.addColorStop(1, '#0a0d06'); // Плавный уход в темную почву в самом низу
+    
+    treeCtx.fillStyle = groundGrad;
+    treeCtx.beginPath();
+    
+    // Начинаем отрисовку строго с левого нижнего угла
+    treeCtx.moveTo(0, h); 
+    // Поднимаемся вверх по левому краю холста
+    treeCtx.lineTo(0, h - 60); 
+    
+    // Рисуем большой плавный холм. Контрольная точка изгиба по центру поднята до h - 160
+    // Фактическая вершина холма получится ровно на высоте h - 110
+    treeCtx.quadraticCurveTo(w / 2, h - 240, w, h - 60);
+    
+    // Опускаемся по правому краю и закрываем контур в правом нижнем углу
+    treeCtx.lineTo(w, h); 
+    treeCtx.closePath();
+    treeCtx.fill();
+    
+    treeCtx.restore();
+}
+
+// Отрисовка магических частиц
+function updateAndDrawParticles(w, h) {
+    // Дозаполняем массив, если частиц не хватает
+    while (particles.length < MAX_PARTICLES) {
+        particles.push(createParticle(w, h));
+    }
+
+    treeCtx.save();
+    particles.forEach((p, i) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.003;
+
+        // Если частица "умерла" или улетела за экран - пересоздаем ее внизу
+        if (p.life <= 0 || p.y < 0 || p.x < 0 || p.x > w) {
+            particles[i] = createParticle(w, h);
+            particles[i].y = h - Math.random() * 50; 
+            particles[i].life = 1;
+        }
+
+        // Мерцание
+        treeCtx.globalAlpha = p.alpha * Math.abs(Math.sin(p.life * Math.PI));
+        
+        // Цвет светлячков (можно сделать зависимым от монет, пока просто салатово-желтые)
+        treeCtx.fillStyle = '#ccff66'; 
+        treeCtx.shadowBlur = 8;
+        treeCtx.shadowColor = '#ccff66';
+        
+        treeCtx.beginPath();
+        treeCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        treeCtx.fill();
+    });
+    treeCtx.restore();
+}
+
+function renderTree() {
+    if (!treeCtx || treeCanvas.width === 0) {
+        requestAnimationFrame(renderTree);
+        return;
+    }
+
+    let w = treeCanvas.width;
+    let h = treeCanvas.height;
+    
+    // Очищаем кадр
+    treeCtx.clearRect(0, 0, w, h);
+
+    let lvl = typeof userLevel !== 'undefined' ? userLevel : 1;
+    let stage = getTreeStage(lvl);
+    
+    // 1. Рисуем фон и частицы и солнце
+    drawSunAndClouds(w, h);
+    drawGround(w, h);
+    updateAndDrawParticles(w, h);
+
+    let maxDepth = stage + 4; 
+    let startLength = 40 + (stage * 15); 
+    
+    treeCtx.save();
+    treeCtx.translate(w / 2, h - 110); 
+    
+    // 2. Добавляем магическую ауру за деревом (свечение)
+    let auraGradient = treeCtx.createRadialGradient(0, -startLength * 2, 0, 0, -startLength * 2, startLength * 4);
+    auraGradient.addColorStop(0, 'rgba(173, 255, 47, 0.15)'); // Легкий салатовый свет
+    auraGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    treeCtx.fillStyle = auraGradient;
+    treeCtx.beginPath();
+    treeCtx.arc(0, -startLength * 2, startLength * 4, 0, Math.PI * 2);
+    treeCtx.fill();
+    
+    // 3. Рисуем само дерево
+    drawBranch(0, maxDepth, startLength, -Math.PI / 2); 
+    
+    treeCtx.restore();
+    
+    treeTime += 0.012; 
+    requestAnimationFrame(renderTree);
+}
+
+function drawBranch(depth, maxDepth, length, angle) {
+    if (depth >= maxDepth) return;
+    
+    let sway = Math.sin(treeTime + depth * 0.8) * 0.035 * (depth / maxDepth);
+    let currentAngle = angle + sway;
+    let endX = Math.cos(currentAngle) * length;
+    let endY = Math.sin(currentAngle) * length;
+    
+    let thickness = Math.max(1.5, (maxDepth - depth) * 3);
+
+    // Слой 1: Тень ствола
+    treeCtx.beginPath();
+    treeCtx.moveTo(0, 0);
+    treeCtx.lineTo(endX, endY);
+    treeCtx.lineWidth = thickness;
+    treeCtx.strokeStyle = '#1e140a';
+    treeCtx.lineCap = 'round';
+    treeCtx.stroke();
+    
+    // Слой 2: Блик ствола
+    if (thickness > 2) {
+        treeCtx.beginPath();
+        treeCtx.moveTo(0, 0);
+        treeCtx.lineTo(endX * 0.95, endY * 0.95);
+        treeCtx.lineWidth = thickness * 0.4;
+        treeCtx.strokeStyle = '#5a3b22';
+        treeCtx.stroke();
+    }
+    
+    treeCtx.translate(endX, endY);
+    
+    // =======================================
+    // ЦВЕТА ЛИСТЬЕВ ПО УРОВНЯМ (СТАДИЯМ)
+    // =======================================
+    
+    if (depth === maxDepth - 1) {
+        let leavesInCluster = 3; 
+        
+        // Получаем текущий уровень и стадию дерева
+        let lvl = typeof userLevel !== 'undefined' ? userLevel : 1;
+        let currentStage = getTreeStage(lvl); // 1, 2, 3, 4 или 5
+        
+        for (let i = 0; i < leavesInCluster; i++) {
+            let rand1 = (depth * 11 + i * 17) % 100 / 100; 
+            let rand2 = (depth * 13 + i * 23) % 100 / 100;
+            
+            let pulse = Math.sin(treeTime * 2.5 + depth + i) * 1.5;
+            let leafSize = 9 + pulse + (rand1 * 5);
+            let leafAngle = (rand2 - 0.5) * Math.PI * 1.2;
+            
+            // Базовые цвета для каждого уровня
+            let r, g, b;
+            
+            if (currentStage === 1) {
+                // 1 уровень — Коричневые / Осенние
+                r = 140 + rand1 * 30;
+                g = 80 + rand2 * 20;
+                b = 30;
+            } else if (currentStage === 2) {
+                // 2 уровень — Зеленые
+                r = 20 + rand1 * 40;
+                g = 120 + rand2 * 80;
+                b = 40 + rand1 * 30;
+            } else if (currentStage === 3) {
+                // 3 уровень — Синие / Голубые
+                r = 30 + rand1 * 20;
+                g = 100 + rand2 * 50;
+                b = 200 + rand1 * 55;
+            } else if (currentStage === 4) {
+                // 4 уровень — Красные / Рубиновые
+                r = 200 + rand1 * 55;
+                g = 30 + rand2 * 20;
+                b = 50 + rand1 * 20;
+            } else {
+                // 5 уровень — Фиолетовые / Магические
+                r = 150 + rand1 * 55;
+                g = 40 + rand2 * 20;
+                b = 200 + rand1 * 55;
+            }
+
+            treeCtx.save();
+            treeCtx.rotate(leafAngle);
+            
+            treeCtx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.85)`;
+            
+            // Рисуем форму листа
+            treeCtx.beginPath();
+            treeCtx.moveTo(0, 0);
+            treeCtx.quadraticCurveTo(leafSize / 2, -leafSize / 3, leafSize, 0);
+            treeCtx.quadraticCurveTo(leafSize / 2, leafSize / 3, 0, 0);
+            treeCtx.fill();
+            
+            treeCtx.restore();
+        }
+    }
+    
+    // Ветвление
+    if (depth < maxDepth - 1) {
+        let spread = 0.45 + (Math.sin(treeTime * 0.5) * 0.03); 
+        drawBranch(depth + 1, maxDepth, length * 0.75, angle - spread);
+        drawBranch(depth + 1, maxDepth, length * 0.75, angle + spread);
+    }
+    
+    treeCtx.translate(-endX, -endY);
+}
+
+
+// Функция для отрисовки одного пушистого облака
+function drawCloud(x, y, scale) {
+    treeCtx.save();
+    treeCtx.translate(x, y);
+    treeCtx.scale(scale, scale);
+
+    // Делаем облака полупрозрачными и мягкими, чтобы они вписывались в стиль
+    treeCtx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+    treeCtx.shadowBlur = 20;
+    treeCtx.shadowColor = 'rgba(255, 255, 255, 0.1)';
+
+    // Рисуем облако из пересекающихся кругов
+    treeCtx.beginPath();
+    treeCtx.arc(0, 0, 25, 0, Math.PI * 2);      // Левая часть
+    treeCtx.arc(35, -15, 35, 0, Math.PI * 2);   // Верхушка
+    treeCtx.arc(70, -5, 25, 0, Math.PI * 2);    // Правая часть
+    treeCtx.arc(35, 10, 30, 0, Math.PI * 2);    // Низ (заполнитель)
+    treeCtx.fill();
+
+    treeCtx.restore();
+}
+
+// Функция для отрисовки солнца и всех облаков
+function drawSunAndClouds(w, h) {
+    treeCtx.save();
+
+    // 1. Рисуем магическое теплое солнце в правом верхнем углу
+    let sunX = w - 100;
+    let sunY = 90;
+
+    // Создаем красивый радиальный градиент (яркий центр, растворяющиеся края)
+    let sunGrad = treeCtx.createRadialGradient(sunX, sunY, 15, sunX, sunY, 90);
+    sunGrad.addColorStop(0, 'rgba(255, 240, 180, 1)');     // Плотный светло-желтый центр
+    sunGrad.addColorStop(0.3, 'rgba(255, 200, 100, 0.5)'); // Оранжевое свечение
+    sunGrad.addColorStop(1, 'rgba(255, 200, 100, 0)');     // Прозрачный край
+
+    treeCtx.fillStyle = sunGrad;
+    treeCtx.beginPath();
+    treeCtx.arc(sunX, sunY, 90, 0, Math.PI * 2);
+    treeCtx.fill();
+
+    // 2. Рисуем облака
+    // Используем treeTime, чтобы они ооочень медленно и плавно "плыли" на месте
+    let drift1 = Math.sin(treeTime * 0.05) * 20;
+    let drift2 = Math.cos(treeTime * 0.04) * 15;
+    let drift3 = Math.sin(treeTime * 0.06 + 2) * 25;
+
+    // Расставляем три облака на разных высотах и разного размера
+    drawCloud(w * 0.15 + drift1, 70, 0.85);  // Слева
+    drawCloud(w * 0.45 + drift2, 120, 0.6);  // По центру (чуть ниже и меньше)
+    drawCloud(w * 0.70 + drift3, 50, 0.9);   // Справа (ближе к солнцу)
+
+    treeCtx.restore();
+}

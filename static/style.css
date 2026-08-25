@@ -749,3 +749,28 @@
         color: #ffffff;
         z-index: 2;
     }
+
+
+
+
+/* --- СТРАНИЦА: ДЕРЕВО --- */
+.tree-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    background: transparent;
+    overflow: hidden;
+    position: relative;
+}
+
+#treeCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+#page-tree {
+    /* Если у тебя уже есть общие стили для .page, добавь только высоту */
+    width: 100%;
+}
