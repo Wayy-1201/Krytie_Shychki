@@ -427,17 +427,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         
             if (badge) {
                 const for_tree = document.querySelector('.content-wrapper');
+                const const_for_scroll = document.querySelector('.app-container');
                 
                 if (link.classList.contains('nav-profile') || link.getAttribute('data-target') === 'page-shop') {
                     badge.innerText = userCoins;
                     badge.style.color = "white";  
                     for_tree.style.marginTop = "60px"; 
-                    
+                    const_for_scroll.style.overflowY = "auto";
                     
                 } else if (link.getAttribute('data-target') === 'page-tasks') {
                     badge.innerText = userLevel;
                     badge.style.color = "#0a84ff";
                     for_tree.style.marginTop = "60px"; 
+                    const_for_scroll.style.overflowY = "auto";
                     
                     
                 } else if (link.getAttribute('data-target') === 'page-tree') {
@@ -447,6 +449,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         badge.innerHTML = treeStage; 
                         badge.style.color = "#33ff00";
                         for_tree.style.marginTop = "45px"; 
+                        const_for_scroll.style.overflowY = "hidden";
                     }
                 }
             }
