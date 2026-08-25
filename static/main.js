@@ -169,7 +169,7 @@ function showToast(message, isError = false) {
     clearTimeout(toastTimeout);
     toastTimeout = setTimeout(() => {
         toast.classList.remove('show');
-    }, 2000);
+    }, 4000);
 }
 
 function updateCharts() {
@@ -231,10 +231,10 @@ function updateCharts() {
     if (moralityFill) {
         moralityFill.style.width = `${successPct}%`;
 
-        if(successPct > 70) {
+        if(successPct > 95) {
             moralityFill.style.boxShadow = '0 0 20px rgba(50, 215, 75, 0.6)';
             moralityFill.style.backgroundColor = 'var(--accent-green)';
-        } else if(successPct < 40) {
+        } else if(successPct < 10) {
             moralityFill.style.boxShadow = '0 0 20px rgba(255, 69, 58, 0.6)';
             moralityFill.style.backgroundColor = 'var(--accent-red)';
         } else {
@@ -380,8 +380,22 @@ function syncUIStates() {
     // 5. Батареи
     const physFill = document.getElementById('fill-physical');
     const socFill = document.getElementById('fill-social');
-    if (physFill) physFill.style.height = `${physicalBattery}%`;
-    if (socFill) socFill.style.height = `${socialBattery}%`;
+    
+    const battarycolor = percent => {
+        if (percent > 65) return 'var(--accent-green)';
+        if (percent > 30) return 'var(--accent-yellow)';
+        return 'var(--accent-red)';
+    };
+
+    if (physFill){
+        physFill.style.height = `${physicalBattery}%`;
+        physFill.style.backgroundColor = battarycolor(physicalBattery);
+    };
+    if (socFill){
+        socFill.style.height = `${socialBattery}%`;
+        socFill.style.backgroundColor = battarycolor(socialBattery);
+    }
+
 }
 
 
