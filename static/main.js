@@ -412,6 +412,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadUserData();
 
     const badge = document.getElementById('nav-badge-val');
+    // --- ИНТЕРАКТИВНЫЙ СКЕЛЕТ ---
+    const bodyMap = document.getElementById('body-map');
+    if (bodyMap) {
+        bodyMap.addEventListener('click', (e) => {
+            const part = e.target;
+            
+            // Если кликнули по части тела (у которой есть data-state)
+            if (part.hasAttribute('data-state')) {
+                let state = parseInt(part.getAttribute('data-state') || '0');
+
+                if (state === 0) {
+                    // 1-й клик: Переводим в желтый
+                    part.setAttribute('data-state', '1');
+                    part.style.fill = 'var(--accent-yellow)';
+                } else if (state === 1) {
+                    // 2-й клик: Переводим в зеленый и даем награду
+                    part.setAttribute('data-state', '2');
+                    part.style.fill = 'var(--accent-green)';
+                    
+                    // Начисляем очки (даем меньше, так как частей тела теперь много)
+                    userCoins += 5;
+                    userXP += 10;
+                    showToast("+5 монет за зону!");
+                    
+                    // Обновляем шапку без отправки в БД
+                    updateProfileUI(false); 
+                } else if (state === 2) {
+                    // 3-й клик: Сброс
+                    part.setAttribute('data-state', '0');
+                    part.style.fill = '#333333';
+                    
+                    // Забираем очки обратно
+                    userCoins -= 5;
+                    userXP -= 10;
+                    updateProfileUI(false);
+                }
+            }
+        });
+    };
 
 // Навигация
     const allNavLinks = document.querySelectorAll('.nav-item, .nav-profile');
